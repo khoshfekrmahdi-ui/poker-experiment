@@ -1111,11 +1111,9 @@ const QUALTRICS_SESSION = urlParams.get("session");
     }
 
 function endExperiment() {
-  // Hide game screen and show the final card (optional)
   document.getElementById("trialCard").classList.add("hidden");
   document.getElementById("endCard").classList.remove("hidden");
 
-  // Prepare full output
   const output = {
     condition: CONDITION,
     preflopRange: state.preflopRange,
@@ -1123,25 +1121,18 @@ function endExperiment() {
     trials: state.data
   };
 
-  // Convert JSON (no URL encoding needed)
-  const payload = JSON.stringify(output);
+  const encoded = encodeURIComponent(JSON.stringify(output));
 
-  // Create a hidden POST form
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia";
+  // Build redirect URL with the Qualtrics session ID
+  let redirect = "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia?Q_JFE=qdg";
 
-  // Create the POST field
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "pokerdata";    // Qualtrics will receive this field
-  input.value = payload;
+  if (QUALTRICS_SESSION) {
+    redirect += "&session=" + QUALTRICS_SESSION;
+  }
 
-  form.appendChild(input);
-  document.body.appendChild(form);
+  redirect += "&pokerdata=" + encoded;
 
-  // Submit the POST request automatically
-  form.submit();
+  window.location.href = redirect;
 }
 
 
