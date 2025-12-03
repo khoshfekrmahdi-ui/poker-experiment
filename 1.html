@@ -1096,22 +1096,29 @@
       });
     }
 
-    function endExperiment() {
-      document.getElementById("trialCard").classList.add("hidden");
-      document.getElementById("endCard").classList.remove("hidden");
+function endExperiment() {
+  document.getElementById("trialCard").classList.add("hidden");
+  document.getElementById("endCard").classList.remove("hidden");
 
-      const output = {
-        condition: CONDITION,
-        preflopRange: state.preflopRange,
-        totalTrials: state.totalTrials,
-        trials: state.data
-      };
+  const output = {
+    condition: CONDITION,
+    preflopRange: state.preflopRange,
+    totalTrials: state.totalTrials,
+    trials: state.data
+  };
 
-      const encoded = encodeURIComponent(JSON.stringify(output));
+  const encoded = encodeURIComponent(JSON.stringify(output));
 
-      window.location.href =
-        "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia?pokerdata=" + encoded;
-    }
+  // Capture Qualtrics PID (if present)
+  const params = new URLSearchParams(window.location.search);
+  const pid = params.get("PID") || "";
+
+  // Redirect back to Qualtrics
+  window.location.href =
+    "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia"
+    + "?PokerData=" + encoded
+    + "&PID=" + pid;
+}
 
 
     // ---------------- EVENT LISTENERS ----------------
