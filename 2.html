@@ -1121,18 +1121,21 @@ function endExperiment() {
     trials: state.data
   };
 
-  const encoded = encodeURIComponent(JSON.stringify(output));
+  // Create form to POST to Qualtrics
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia";
 
-  // Build redirect URL with the Qualtrics session ID
-  let redirect = "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia?Q_JFE=qdg";
+  // Hidden input storing JSON
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = "pokerdata";
+  input.value = JSON.stringify(output);
 
-  if (QUALTRICS_SESSION) {
-    redirect += "&session=" + QUALTRICS_SESSION;
-  }
+  form.appendChild(input);
+  document.body.appendChild(form);
 
-  redirect += "&pokerdata=" + encoded;
-
-  window.location.href = redirect;
+  form.submit();
 }
 
 
