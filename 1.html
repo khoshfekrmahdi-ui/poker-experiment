@@ -281,6 +281,10 @@
   </div>
 
   <script>
+    // ----- QUALTRICS SESSION CAPTURE -----
+const urlParams = new URLSearchParams(window.location.search);
+const QUALTRICS_SESSION = urlParams.get("session");
+
     // ---------------- CONFIG ----------------
     const CONDITION = "badbeat";
     const NUM_MC_TRIALS = 600; // Monte Carlo samples per equity estimate
