@@ -1121,21 +1121,31 @@ function endExperiment() {
     trials: state.data
   };
 
-  // Create form to POST to Qualtrics
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia";
+  const text = JSON.stringify(output);
+  const log = document.getElementById("logOutput");
+  log.value = text;
+  log.classList.remove("hidden");
 
-  // Hidden input storing JSON
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = "pokerdata";
-  input.value = JSON.stringify(output);
+  // Add a copy button
+  const copyBtn = document.createElement("button");
+  copyBtn.textContent = "Copy Code";
+  copyBtn.className = "primary";
+  copyBtn.style.marginTop = "16px";
+  copyBtn.onclick = () => {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Copied! Please paste this code into the Qualtrics question.");
+    });
+  };
+  document.getElementById("endCard").appendChild(copyBtn);
 
-  form.appendChild(input);
-  document.body.appendChild(form);
-
-  form.submit();
+  // Add instruction message
+  const instruction = document.createElement("p");
+  instruction.style.textAlign = "center";
+  instruction.style.marginTop = "12px";
+  instruction.innerHTML =
+    "Copy the code above and return to the Qualtrics survey.<br>" +
+    "Paste it into the box on the next page.";
+  document.getElementById("endCard").appendChild(instruction);
 }
 
 
