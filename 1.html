@@ -1097,9 +1097,11 @@
     }
 
 function endExperiment() {
+  // Hide game screen and show the final card (optional)
   document.getElementById("trialCard").classList.add("hidden");
   document.getElementById("endCard").classList.remove("hidden");
 
+  // Prepare full output
   const output = {
     condition: CONDITION,
     preflopRange: state.preflopRange,
@@ -1107,18 +1109,27 @@ function endExperiment() {
     trials: state.data
   };
 
-  const encoded = encodeURIComponent(JSON.stringify(output));
+  // Convert JSON (no URL encoding needed)
+  const payload = JSON.stringify(output);
 
-  // Capture Qualtrics PID (if present)
-  const params = new URLSearchParams(window.location.search);
-  const pid = params.get("PID") || "";
+  // Create a hidden POST form
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia";
 
-  // Redirect back to Qualtrics
-  window.location.href =
-    "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia"
-    + "?PokerData=" + encoded
-    + "&PID=" + pid;
+  // Create the POST field
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = "pokerdata";    // Qualtrics will receive this field
+  input.value = payload;
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+
+  // Submit the POST request automatically
+  form.submit();
 }
+
 
 
 
