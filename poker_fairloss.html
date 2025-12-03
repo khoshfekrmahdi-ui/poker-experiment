@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Heads-Up All-in or Fold Poker Experiment (Bad Beat)</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.5;
+      background: #1c1f24;
+      color: #f5f5f5;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .card {
+      background: #262a32;
+      border-radius: 16px;
+      padding: 24px 28px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      margin-bottom: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      padding: 10px 24px;
+      margin: 8px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    button.primary {
+      font-weight: 600;
+      background: #4caf50;
+      color: #fff;
+    }
+    button.primary:hover,
+    button.choice:hover {
+      opacity: 0.92;
+    }
+    button.choice {
+      min-width: 120px;
+      background: #3a3f4b;
+      color: #fff;
+    }
+    .center-btn {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .meta {
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .hand-info {
+      font-size: 24px;
+      margin: 16px 0 12px;
+    }
+    .situation-text {
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+    .table-wrapper {
+      margin-top: 12px;
+      padding: 28px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #2e8b57 0, #0b3b1d 60%, #020608 100%);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      color: #f5f5f5;
+    }
+    .progress {
+      font-size: 14px;
+      margin-top: 14px;
+      text-align: center;
+      color: #e0e0e0;
+    }
+    .label-inline {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+    .red-suit {
+      color: #ff4c4c;
+    }
+    .black-suit {
+      color: #000000;
+    }
+    #boardBox {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #3a3f4b;
+      font-size: 18px;
+      text-align: center;
+    }
+    #villainLine {
+      margin-bottom: 6px;
+      font-size: 18px;
+    }
+    #boardLine {
+      margin-bottom: 6px;
+      font-size: 22px;
+    }
+    #equityLine {
+      margin-bottom: 8px;
+      font-size: 20px;
+    }
+    #resultLine {
+      margin-top: 4px;
+      font-size: 18px;
+    }
+    .win-text {
+      color: #8bc34a;
+      font-weight: 600;
+    }
+    .lose-text {
+      color: #ff5252;
+      font-weight: 600;
+    }
+    .tie-text {
+      color: #ffc107;
+      font-weight: 600;
+    }
+    textarea.hidden {
+      display: none;
+    }
+
+    /* Range grid */
+    .range-explainer {
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .range-table {
+      border-collapse: collapse;
+      margin: 16px auto 8px;
+    }
+    .range-table th,
+    .range-table td {
+      width: 34px;
+      height: 34px;
+      text-align: center;
+      font-size: 11px;
+      border: 1px solid #555;
+      padding: 0;
+    }
+    .range-table th.header {
+      background: #333;
+      color: #f5f5f5;
+      font-weight: 600;
+      cursor: default;
+    }
+    .range-table td.hand-cell {
+      background: #555;
+      color: #f5f5f5;
+      cursor: pointer;
+    }
+    .range-table td.hand-cell.selected {
+      background: #ff8a3c;
+      color: #fff;
+      font-weight: 600;
+    }
+    .small-note {
+      font-size: 13px;
+      color: #ccc;
+      margin-top: 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Heads-Up Poker Decision Task</h1>
+
+  <!-- Start screen -->
+  <div id="startCard" class="card">
+    <h2>Welcome</h2>
+    <p style="text-align:center;">
+      In this task you will make a series of all-in or fold decisions in a simplified heads-up poker game.
+    </p>
+    <div class="center-btn">
+      <button id="startButton" class="primary">Start</button>
+    </div>
+  </div>
+
+  <!-- Instructions screen -->
+  <div id="instructionsCard" class="card hidden">
+    <h2>Instructions</h2>
+    <p>
+      You will play a simplified heads-up Texas Hold'em game. On each hand, you are in the
+      <strong>small blind (SB)</strong> and choose between:
+    </p>
+    <ul>
+      <li><strong>All-in</strong> (push all your chips)</li>
+      <li><strong>Fold</strong> (give up your small blind)</li>
+    </ul>
+    <p>
+      Stacks reset every hand: both you and the opponent effectively have
+      <strong>20 big blinds</strong>. Blinds are <strong>1 / 2</strong>. You post 1 as the SB and the opponent posts 2 as the BB.
+    </p>
+    <p>
+      There are <strong>40 hands</strong> in total. Please imagine that you are playing for real money and
+      respond as you normally would in this situation.
+    </p>
+    <div class="center-btn">
+      <button id="toRangeButton" class="primary">Continue</button>
+    </div>
+  </div>
+
+  <!-- Pre-play range selection screen -->
+  <div id="rangeCard" class="card hidden">
+    <h2>Pre-play Plan</h2>
+    <p>
+      Before we start, please indicate which starting hands you <strong>think</strong> you should go all-in with in this
+      all-in-or-fold heads-up game.
+    </p>
+    <p class="range-explainer">
+      The grid below uses standard poker notation. Along the diagonal are pairs (AA, KK, QQ, ...).
+      Above the diagonal are <strong>suited</strong> hands (for example, <strong>AQs</strong> means A-Q of the same suit),
+      and below the diagonal are <strong>offsuit</strong> hands (for example, <strong>AQo</strong> means A-Q of different suits).
+    </p>
+    <p class="range-explainer">
+      Click a cell to select a hand (it will turn orange). Click again to de-select it. You can select as many or as
+      as few hands as you wish.
+    </p>
+    <p class="range-explainer">
+      <strong>Important:</strong> This chart is <strong>not restrictive</strong>. During the 40-hand game you are completely free
+      to go all-in or fold with any hand, even if you did not select it here. Your selections on this page are
+      <strong>only used for research</strong> and have <strong>no effect</strong> on which cards you are dealt or how the engine
+      plays. The cards you see later are determined independently of this chart.
+    </p>
+
+    <div id="rangeGrid"></div>
+
+    <p class="small-note">
+      When you are satisfied with your selections, click Continue to start the game.
+    </p>
+    <div class="center-btn">
+      <button id="startGameButton" class="primary">Continue to game</button>
+    </div>
+  </div>
+
+  <!-- Trial screen -->
+  <div id="trialCard" class="card hidden">
+    <div class="meta" id="trialMeta"></div>
+
+    <div class="table-wrapper">
+      <div class="hand-info" id="handText"></div>
+      <div class="situation-text" id="situationText"></div>
+
+      <div id="choiceButtons" style="text-align:center;">
+        <button class="choice primary" onclick="handleChoice('allin')">All-in</button>
+        <button class="choice" onclick="handleChoice('fold')">Fold</button>
+      </div>
+
+      <div id="boardBox" class="hidden">
+        <div id="villainLine"></div>
+        <div id="boardLine"></div>
+        <div id="equityLine"></div>
+        <div id="resultLine"></div>
+      </div>
+
+      <div class="progress" id="progressText"></div>
+    </div>
+
+    <div class="center-btn">
+      <button id="nextButton" class="primary hidden" onclick="nextTrial()">Next hand</button>
+    </div>
+  </div>
+
+  <!-- End screen -->
+  <div id="endCard" class="card hidden">
+    <h2>Task complete</h2>
+    <p style="text-align:center;">
+      Thank you for completing the poker decision task. You may now close this window.
+    </p>
+    <textarea id="logOutput" class="hidden" rows="10" readonly></textarea>
+  </div>
+
+  <script>
+    // ---------------- CONFIG ----------------
+    const CONDITION = "badbeat";
+    const NUM_MC_TRIALS = 600; // Monte Carlo samples per equity estimate
+
+    // ---------------- CARD HELPERS ----------------
+    const ranks = ["2","3","4","5","6","7","8","9","T","J","Q","K","A"];
+    const suits = ["♠","♥","♦","♣"];
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function rankToIndex(r) {
+      return ranks.indexOf(r);
+    }
+
+    function cardKey(card) {
+      return card.rank + card.suit;
+    }
+
+    function formatCardHTML(rank, suitChar) {
+      const red = (suitChar === "♥" || suitChar === "♦");
+      const cls = red ? "red-suit" : "black-suit";
+      return rank + '<span class="' + cls + '">' + suitChar + "</span>";
+    }
+
+    // Expand a hand code like "AQo" or "AKs" into two specific cards with random suits
+    function expandHandToCardsRandom(handCode) {
+      let r1, r2, suited = false, pair = false;
+      if (handCode.length === 2) {
+        r1 = handCode[0];
+        r2 = handCode[1];
+        pair = true;
+      } else if (handCode.length === 3) {
+        r1 = handCode[0];
+        r2 = handCode[1];
+        suited = (handCode[2] === "s");
+      } else {
+        r1 = randomItem(ranks);
+        r2 = randomItem(ranks);
+      }
+
+      if (pair) {
+        const s1 = randomItem(suits);
+        let s2;
+        do { s2 = randomItem(suits); } while (s2 === s1);
+        return [{rank: r1, suit: s1}, {rank: r2, suit: s2}];
+      } else if (suited) {
+        const s1 = randomItem(suits);
+        return [{rank: r1, suit: s1}, {rank: r2, suit: s1}];
+      } else {
+        const s1 = randomItem(suits);
+        let s2;
+        do { s2 = randomItem(suits); } while (s2 === s1);
+        return [{rank: r1, suit: s1}, {rank: r2, suit: s2}];
+      }
+    }
+
+    function handToHTMLFromCards(cards) {
+      return formatCardHTML(cards[0].rank, cards[0].suit) + " " +
+             formatCardHTML(cards[1].rank, cards[1].suit);
+    }
+
+    function makeDeck(excludedCards) {
+      const excluded = new Set(excludedCards.map(cardKey));
+      const deck = [];
+      for (const r of ranks) {
+        for (const s of suits) {
+          const c = {rank: r, suit: s};
+          if (!excluded.has(cardKey(c))) deck.push(c);
+        }
+      }
+      return deck;
+    }
+
+    function sampleCards(deck, n) {
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const idx = Math.floor(Math.random() * deck.length);
+        out.push(deck[idx]);
+        deck.splice(idx, 1);
+      }
+      return out;
+    }
+
+    // ---------------- HAND RANGES ----------------
+    const top20 = [
+      "AA","KK","QQ","JJ","TT","99","88","77","66",
+      "AKs","AQs","AJs","ATs","KQs","KJs","QJs","JTs","T9s","98s",
+      "AKo","AQo","AJo","KQo",
+      "A9s","A8s","A7s","A6s","A5s","A4s","A3s","A2s",
+      "KTs","QTs"
+    ];
+    const next30_1 = [
+      "J9s","87s","76s","65s","54s","K9s","Q9s","J8s","T8s","97s",
+      "KJo","KTo","QJo","QTo","JTo",
+      "A9o","A8o","A7o","A6o","A5o","A4o","A3o","A2o",
+      "K8s","K7s","K6s","Q8s","J7s","T7s","86s","75s","64s","53s",
+      "K9o","Q9o","J9o","T9o"
+    ];
+    const next30_2 = [
+      "96s","85s","74s","63s","52s","42s",
+      "K5s","K4s","K3s","K2s",
+      "Q7s","Q6s","J6s","T6s",
+      "95s","84s","73s","62s",
+      "K7o","K6o","K5o",
+      "Q8o","Q7o","J8o","T8o","98o","87o","76o","65o","54o",
+      "Q5s","Q4s","J5s","T5s","94s","83s","72s"
+    ];
+    const bottom20 = [
+      "K4o","K3o","K2o","Q6o","Q5o","Q4o","J7o","T7o","97o","86o",
+      "75o","64o","53o","43o","Q3o","Q2o","J4o","T4o","93o","82o",
+      "72o","J3o","T3o","92o","83o","62o","52o","42o","32o","J2o","T2o"
+    ];
+    const allHands = top20.concat(next30_1, next30_2, bottom20);
+
+    function categoryOf(code) {
+      if (top20.includes(code)) return "top";
+      if (next30_1.includes(code)) return "mid1";
+      if (next30_2.includes(code)) return "mid2";
+      if (bottom20.includes(code)) return "bottom";
+      return "unknown";
+    }
+
+    // ---------------- EXPERIMENT STATE ----------------
+    const state = {
+      participantId: null,
+      totalTrials: 40,
+      trialsPerBlock: 20,
+      currentTrialIndex: 0,
+      trialPlan: [],
+      data: [],
+      currentHeroCards: null,
+      currentVillainCards: null,
+      currentVillainCode: null,
+      currentBoard: null,
+      preflopRange: [] // list of hand codes selected in grid
+    };
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createCategoryDistributionForBlock() {
+      const arr = [];
+      for (let i = 0; i < 4; i++) arr.push("top");
+      for (let i = 0; i < 6; i++) arr.push("mid1");
+      for (let i = 0; i < 6; i++) arr.push("mid2");
+      for (let i = 0; i < 4; i++) arr.push("bottom");
+      return shuffle(arr);
+    }
+
+    function createTrialPlan() {
+      const plan = [];
+
+      // Block 1 (hands 1–20)
+      let cats1 = createCategoryDistributionForBlock();
+      // fix 15 and 20 as top (scripted)
+      cats1[14] = "top";
+      cats1[19] = "top";
+      let remainingTopFold = 2; // the other two top hands that always get a fold
+
+      for (let i = 0; i < 20; i++) {
+        const trialNumber = i + 1;
+        const cat = cats1[i];
+        let heroCode;
+        let isScript = false;
+        let scriptType = null;
+        let specialTopFold = false;
+
+        if (trialNumber === 15) {
+          heroCode = "QQ";
+          isScript = true;
+          scriptType = "QQ_badbeat";
+        } else if (trialNumber === 20) {
+          heroCode = "AQo";
+          isScript = true;
+          scriptType = "AQo_badbeat";
+        } else if (cat === "top") {
+          const pool = top20.filter(h => h !== "QQ" && h !== "AQo");
+          heroCode = randomItem(pool);
+          if (remainingTopFold > 0) {
+            specialTopFold = true;
+            remainingTopFold--;
+          }
+        } else if (cat === "mid1") {
+          heroCode = randomItem(next30_1);
+        } else if (cat === "mid2") {
+          heroCode = randomItem(next30_2);
+        } else if (cat === "bottom") {
+          heroCode = randomItem(bottom20);
+        } else {
+          heroCode = randomItem(allHands);
+        }
+
+        plan.push({
+          trial: trialNumber,
+          block: 1,
+          heroCategory: cat,
+          heroHandCode: heroCode,
+          scripted: isScript,
+          scriptType: scriptType,
+          specialTopFold: specialTopFold
+        });
+      }
+
+      // Block 2 (hands 21–40)
+      let cats2 = createCategoryDistributionForBlock();
+      for (let i = 0; i < 20; i++) {
+        const trialNumber = 21 + i;
+        const cat = cats2[i];
+        let heroCode;
+        if (cat === "top") heroCode = randomItem(top20);
+        else if (cat === "mid1") heroCode = randomItem(next30_1);
+        else if (cat === "mid2") heroCode = randomItem(next30_2);
+        else if (cat === "bottom") heroCode = randomItem(bottom20);
+        else heroCode = randomItem(allHands);
+
+        plan.push({
+          trial: trialNumber,
+          block: 2,
+          heroCategory: cat,
+          heroHandCode: heroCode,
+          scripted: false,
+          scriptType: null,
+          specialTopFold: false
+        });
+      }
+
+      state.trialPlan = plan;
+    }
+
+    // ---------------- HAND EVALUATION ----------------
+    function evaluate5(cards) {
+      const counts = {};
+      const suitCounts = {};
+      const rankIdxs = cards.map(c => rankToIndex(c.rank)).sort((a,b) => b - a);
+      for (const c of cards) {
+        const ri = rankToIndex(c.rank);
+        counts[ri] = (counts[ri] || 0) + 1;
+        suitCounts[c.suit] = (suitCounts[c.suit] || 0) + 1;
+      }
+      const isFlush = Object.values(suitCounts).some(c => c === 5);
+
+      const uniq = Array.from(new Set(rankIdxs)).sort((a,b) => a - b);
+      let isStraight = false;
+      let straightHigh = -1;
+      if (uniq.length >= 5) {
+        if (uniq.length === 5 && uniq[4] - uniq[0] === 4) {
+          isStraight = true;
+          straightHigh = uniq[4];
+        } else if (uniq.toString() === "0,1,2,3,12") {
+          isStraight = true;
+          straightHigh = 3; // wheel
+        }
+      }
+
+      const entries = Object.entries(counts).map(([ri,c]) => ({ri: parseInt(ri), c}));
+      entries.sort((a,b) => {
+        if (b.c !== a.c) return b.c - a.c;
+        return b.ri - a.ri;
+      });
+
+      const sortedRanksDesc = rankIdxs.slice();
+
+      let category;
+      let rankVec = [];
+
+      if (isStraight && isFlush) {
+        category = 8;
+        rankVec = [straightHigh];
+      } else if (entries[0].c === 4) {
+        category = 7;
+        const quadRank = entries[0].ri;
+        const kicker = entries[1].ri;
+        rankVec = [quadRank, kicker];
+      } else if (entries[0].c === 3 && entries[1].c === 2) {
+        category = 6;
+        rankVec = [entries[0].ri, entries[1].ri];
+      } else if (isFlush) {
+        category = 5;
+        rankVec = sortedRanksDesc;
+      } else if (isStraight) {
+        category = 4;
+        rankVec = [straightHigh];
+      } else if (entries[0].c === 3) {
+        category = 3;
+        const tripRank = entries[0].ri;
+        const kickers = sortedRanksDesc.filter(r => r !== tripRank).slice(0,2);
+        rankVec = [tripRank].concat(kickers);
+      } else if (entries[0].c === 2 && entries[1].c === 2) {
+        category = 2;
+        const highPair = Math.max(entries[0].ri, entries[1].ri);
+        const lowPair = Math.min(entries[0].ri, entries[1].ri);
+        const kicker = sortedRanksDesc.find(r => r !== highPair && r !== lowPair);
+        rankVec = [highPair, lowPair, kicker];
+      } else if (entries[0].c === 2) {
+        category = 1;
+        const pairRank = entries[0].ri;
+        const kickers = sortedRanksDesc.filter(r => r !== pairRank).slice(0,3);
+        rankVec = [pairRank].concat(kickers);
+      } else {
+        category = 0;
+        rankVec = sortedRanksDesc;
+      }
+
+      return {category, ranks: rankVec};
+    }
+
+    function best5of7(cards7) {
+      let bestScore = null;
+      for (let a = 0; a < 7; a++) {
+        for (let b = a+1; b < 7; b++) {
+          for (let c = b+1; c < 7; c++) {
+            for (let d = c+1; d < 7; d++) {
+              for (let e = d+1; e < 7; e++) {
+                const combo = [cards7[a], cards7[b], cards7[c], cards7[d], cards7[e]];
+                const score = evaluate5(combo);
+                if (!bestScore || compareScores(score, bestScore) > 0) {
+                  bestScore = score;
+                }
+              }
+            }
+          }
+        }
+      }
+      return bestScore;
+    }
+
+    function compareScores(a, b) {
+      if (a.category !== b.category) return a.category - b.category;
+      const len = Math.max(a.ranks.length, b.ranks.length);
+      for (let i = 0; i < len; i++) {
+        const ra = a.ranks[i] || 0;
+        const rb = b.ranks[i] || 0;
+        if (ra !== rb) return ra - rb;
+      }
+      return 0;
+    }
+
+    function determineWinner(heroCards, villainCards, board) {
+      const hero7 = heroCards.concat(board);
+      const villain7 = villainCards.concat(board);
+      const heroScore = best5of7(hero7);
+      const villainScore = best5of7(villain7);
+      const cmp = compareScores(heroScore, villainScore);
+      if (cmp > 0) return {heroWins: true, tie: false};
+      if (cmp < 0) return {heroWins: false, tie: false};
+      return {heroWins: false, tie: true};
+    }
+
+    function estimateEquityMonteCarlo(heroCards, villainCards, knownBoard, numTrials) {
+      const excluded = heroCards.concat(villainCards, knownBoard);
+      let heroWins = 0, villainWins = 0, ties = 0;
+
+      for (let t = 0; t < numTrials; t++) {
+        const deck = makeDeck(excluded);
+        const need = 5 - knownBoard.length;
+        const sampled = need > 0 ? sampleCards(deck, need) : [];
+        const board = knownBoard.concat(sampled);
+
+        const res = determineWinner(heroCards, villainCards, board);
+        if (res.tie) ties++;
+        else if (res.heroWins) heroWins++;
+        else villainWins++;
+      }
+
+      const total = heroWins + villainWins + ties;
+      if (total === 0) return {hero: 0.5, villain: 0.5, tie: 0};
+      const heroEq = (heroWins + 0.5 * ties) / total;
+      const villainEq = (villainWins + 0.5 * ties) / total;
+      const tieEq = ties / total;
+      return {hero: heroEq, villain: villainEq, tie: tieEq};
+    }
+
+    // ---------------- SCRIPTED HANDS FOR FAIR LOSS ----------------
+    function scriptedHeroCards(scriptType) {
+      if (scriptType === "QQ_badbeat") {
+        // Hero keeps QQ exactly as before
+        return [{rank:"Q",suit:"♠"},{rank:"Q",suit:"♥"}];
+      }
+      if (scriptType === "AQo_badbeat") {
+        // Hero keeps AQo exactly as before
+        return [{rank:"A",suit:"♠"},{rank:"Q",suit:"♦"}];
+      }
+      return null;
+    }
+
+    function scriptedVillainAndBoard(scriptType) {
+      if (scriptType === "QQ_badbeat") {
+        // FAIR LOSS VERSION
+        // Villain: KK (no conflict with Q♠ Q♥)
+        const villain = [
+          {rank:"K",suit:"♦"},
+          {rank:"K",suit:"♣"}
+        ];
+        // Board: 4♣ 7♦ J♠ | 7♥ | 9♦
+        const board = [
+          {rank:"4",suit:"♣"},
+          {rank:"7",suit:"♦"},
+          {rank:"J",suit:"♠"},
+          {rank:"7",suit:"♥"},
+          {rank:"9",suit:"♦"}
+        ];
+        return {villainCards: villain, villainCode: "KK", board: board};
+      }
+
+      if (scriptType === "AQo_badbeat") {
+        // FAIR LOSS VERSION
+        // Villain: AA (no conflict with A♠ Q♦)
+        const villain = [
+          {rank:"A",suit:"♥"},
+          {rank:"A",suit:"♣"}
+        ];
+        // Board: 3♣ 8♦ 9♠ | K♥ | 2♦
+        const board = [
+          {rank:"3",suit:"♣"},
+          {rank:"8",suit:"♦"},
+          {rank:"9",suit:"♠"},
+          {rank:"K",suit:"♥"},
+          {rank:"2",suit:"♦"}
+        ];
+        return {villainCards: villain, villainCode: "AA", board: board};
+      }
+      return null;
+    }
+
+    // ---------------- FIXED VILLAIN HAND GENERATION ----------------
+    function randomVillainHand(heroCards) {
+      // Build a deck that excludes hero's cards
+      const deck = makeDeck(heroCards);
+      // Choose a villain hand code as before
+      const code = randomItem(allHands);
+      const cat = categoryOf(code);
+      let chosenCards = [];
+
+      if (code.length === 2) {
+        // Pair, e.g., "TT"
+        const r = code[0];
+        const pool = deck.filter(c => c.rank === r);
+        if (pool.length >= 2) {
+          shuffle(pool);
+          chosenCards = [pool[0], pool[1]];
+        } else {
+          // Fallback: just sample two random cards from deck (still disjoint from hero)
+          chosenCards = sampleCards(deck, 2);
+        }
+      } else if (code.length === 3) {
+        const r1 = code[0];
+        const r2 = code[1];
+        const suited = (code[2] === "s");
+
+        if (suited) {
+          // Need same suit for both ranks
+          const candidates = [];
+          for (const s of suits) {
+            const c1 = deck.find(c => c.rank === r1 && c.suit === s);
+            const c2 = deck.find(c => c.rank === r2 && c.suit === s);
+            if (c1 && c2) candidates.push([c1, c2]);
+          }
+          if (candidates.length > 0) {
+            shuffle(candidates);
+            chosenCards = candidates[0];
+          } else {
+            chosenCards = sampleCards(deck, 2);
+          }
+        } else {
+          // Offsuit: ranks differ, suits must differ
+          const set1 = deck.filter(c => c.rank === r1);
+          const set2 = deck.filter(c => c.rank === r2);
+          shuffle(set1);
+          shuffle(set2);
+          let found = null;
+          for (const c1 of set1) {
+            for (const c2 of set2) {
+              if (c1.suit !== c2.suit) {
+                found = [c1, c2];
+                break;
+              }
+            }
+            if (found) break;
+          }
+          if (found) {
+            chosenCards = found;
+          } else {
+            chosenCards = sampleCards(deck, 2);
+          }
+        }
+      } else {
+        // Unexpected format: just sample two cards
+        chosenCards = sampleCards(deck, 2);
+      }
+
+      return {code, cat, cards: chosenCards};
+    }
+
+    // ---------------- RANGE GRID BUILD ----------------
+    const rangeRanks = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+
+    function buildRangeGrid() {
+      const container = document.getElementById("rangeGrid");
+      if (!container) return;
+
+      const table = document.createElement("table");
+      table.className = "range-table";
+
+      const headerRow = document.createElement("tr");
+      const corner = document.createElement("th");
+      corner.className = "header";
+      corner.textContent = "";
+      headerRow.appendChild(corner);
+      rangeRanks.forEach(r => {
+        const th = document.createElement("th");
+        th.className = "header";
+        th.textContent = r;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      for (let i = 0; i < rangeRanks.length; i++) {
+        const row = document.createElement("tr");
+
+        const rowHeader = document.createElement("th");
+        rowHeader.className = "header";
+        rowHeader.textContent = rangeRanks[i];
+        row.appendChild(rowHeader);
+
+        for (let j = 0; j < rangeRanks.length; j++) {
+          const cell = document.createElement("td");
+          cell.className = "hand-cell";
+
+          let code;
+          const high = rangeRanks[i];
+          const low = rangeRanks[j];
+          if (i === j) {
+            code = high + high;
+          } else if (i < j) {
+            code = high + low + "s";
+          } else {
+            code = high + low + "o";
+          }
+
+          cell.dataset.hand = code;
+          cell.textContent = code;
+          cell.addEventListener("click", () => toggleHandSelection(code, cell));
+
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+
+      container.appendChild(table);
+    }
+
+    function toggleHandSelection(code, cell) {
+      const idx = state.preflopRange.indexOf(code);
+      if (idx === -1) {
+        state.preflopRange.push(code);
+        cell.classList.add("selected");
+      } else {
+        state.preflopRange.splice(idx, 1);
+        cell.classList.remove("selected");
+      }
+    }
+
+    // ---------------- UI FLOW ----------------
+    function showInstructions() {
+      document.getElementById("startCard").classList.add("hidden");
+      document.getElementById("instructionsCard").classList.remove("hidden");
+    }
+
+    function showRangeSelection() {
+      document.getElementById("instructionsCard").classList.add("hidden");
+      document.getElementById("rangeCard").classList.remove("hidden");
+    }
+
+    function startGame() {
+      document.getElementById("rangeCard").classList.add("hidden");
+      document.getElementById("trialCard").classList.remove("hidden");
+      state.currentTrialIndex = 0;
+      state.data = [];
+      createTrialPlan();
+      nextTrial();
+    }
+
+    function nextTrial() {
+      state.currentTrialIndex += 1;
+      if (state.currentTrialIndex > state.totalTrials) {
+        endExperiment();
+        return;
+      }
+
+      const t = state.trialPlan[state.currentTrialIndex - 1];
+      state.currentHeroCards = null;
+      state.currentVillainCards = null;
+      state.currentBoard = null;
+
+      document.getElementById("trialMeta").textContent =
+        "Hand " + t.trial + " of " + state.totalTrials;
+
+      let heroCards;
+      if (t.scripted) {
+        heroCards = scriptedHeroCards(t.scriptType);
+      } else {
+        heroCards = expandHandToCardsRandom(t.heroHandCode);
+      }
+      state.currentHeroCards = heroCards;
+
+      document.getElementById("handText").innerHTML =
+        "Your hand: " + handToHTMLFromCards(heroCards);
+
+      document.getElementById("situationText").textContent =
+        "You are in the small blind heads-up. You can either go All-in or Fold.";
+
+      document.getElementById("choiceButtons").style.display = "block";
+      document.getElementById("boardBox").classList.add("hidden");
+      document.getElementById("villainLine").innerHTML = "";
+      document.getElementById("boardLine").innerHTML = "";
+      document.getElementById("equityLine").innerHTML = "";
+      document.getElementById("resultLine").innerHTML = "";
+      document.getElementById("nextButton").classList.add("hidden");
+      document.getElementById("progressText").textContent =
+        "Please decide what you want to do.";
+    }
+
+    function handleChoice(choice) {
+      const t = state.trialPlan[state.currentTrialIndex - 1];
+      const heroCards = state.currentHeroCards;
+
+      if (choice === "fold") {
+        document.getElementById("choiceButtons").style.display = "none";
+        document.getElementById("boardBox").classList.remove("hidden");
+        document.getElementById("villainLine").innerHTML = "";
+        document.getElementById("boardLine").innerHTML =
+          "You fold and give up your small blind (1 BB).";
+        document.getElementById("equityLine").innerHTML = "";
+        document.getElementById("resultLine").innerHTML = "";
+        document.getElementById("nextButton").classList.remove("hidden");
+        document.getElementById("progressText").textContent =
+          "Click Next hand to proceed.";
+
+        state.data.push({
+          trial: t.trial,
+          block: t.block,
+          heroCategory: t.heroCategory,
+          heroHandCode: t.heroHandCode,
+          scripted: t.scripted,
+          scriptType: t.scriptType,
+          specialTopFold: t.specialTopFold,
+          decision: "fold",
+          villainAction: "none",
+          villainHandCode: null,
+          heroWins: false,
+          tie: false,
+          board: null,
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      // All-in
+      let villainAction = "fold";
+      let villainCode = null;
+      let villainCards = null;
+      let board = null;
+
+      if (t.scripted) {
+        const vb = scriptedVillainAndBoard(t.scriptType);
+        villainAction = "call";
+        villainCode = vb.villainCode;
+        villainCards = vb.villainCards;
+        board = vb.board;
+      } else if (t.heroCategory === "top" && t.specialTopFold) {
+        const villain = randomVillainHand(heroCards);
+        villainCode = villain.code;
+        villainCards = villain.cards;
+        villainAction = "fold";
+      } else {
+        const villain = randomVillainHand(heroCards);
+        villainCode = villain.code;
+        villainCards = villain.cards;
+        const cat = villain.cat;
+        if (cat === "top") villainAction = "call";
+        else if (cat === "mid1") villainAction = (Math.random() < 0.5 ? "call" : "fold");
+        else villainAction = "fold";
+
+        if (villainAction === "call") {
+          const deck = makeDeck(heroCards.concat(villainCards));
+          board = sampleCards(deck, 5);
+        }
+      }
+
+      state.currentVillainCards = villainCards;
+      state.currentVillainCode = villainCode;
+      state.currentBoard = board;
+
+      document.getElementById("choiceButtons").style.display = "none";
+      document.getElementById("boardBox").classList.remove("hidden");
+
+      const villainHTML = villainCards ? handToHTMLFromCards(villainCards) : "";
+
+      if (villainAction === "fold") {
+        document.getElementById("villainLine").innerHTML =
+          '<span class="label-inline">Opponent action:</span> folds.';
+        document.getElementById("boardLine").innerHTML =
+          "You go all-in. The opponent folds and you win the blinds (3 BB).";
+        document.getElementById("equityLine").innerHTML = "";
+        document.getElementById("resultLine").innerHTML = "";
+        document.getElementById("nextButton").classList.remove("hidden");
+        document.getElementById("progressText").textContent =
+          "Click Next hand to proceed.";
+
+        state.data.push({
+          trial: t.trial,
+          block: t.block,
+          heroCategory: t.heroCategory,
+          heroHandCode: t.heroHandCode,
+          scripted: t.scripted,
+          scriptType: t.scriptType,
+          specialTopFold: t.specialTopFold,
+          decision: "allin",
+          villainAction: "fold",
+          villainHandCode: villainCode,
+          heroWins: true,
+          tie: false,
+          board: null,
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      // Villain calls -> showdown with timed board and equity
+      document.getElementById("villainLine").innerHTML =
+        '<span class="label-inline">Opponent hand:</span> ' + villainHTML;
+      document.getElementById("boardLine").innerHTML = "";
+      document.getElementById("equityLine").innerHTML = "";
+      document.getElementById("resultLine").innerHTML = "";
+      document.getElementById("progressText").textContent = "Hand in progress...";
+
+      const eqPre = estimateEquityMonteCarlo(heroCards, villainCards, [], NUM_MC_TRIALS);
+      document.getElementById("equityLine").innerHTML =
+        "Winning chance: " + (eqPre.hero*100).toFixed(1) + "%";
+
+      const flop = board.slice(0,3);
+      const turnBoard = board.slice(0,4);
+      const fullBoard = board.slice(0,5);
+
+      const showdown = determineWinner(heroCards, villainCards, fullBoard);
+      const heroWinsFinal = showdown.heroWins;
+      const tieFinal = showdown.tie;
+
+      const boardLineElem = document.getElementById("boardLine");
+      const equityLineElem = document.getElementById("equityLine");
+      const resultLineElem = document.getElementById("resultLine");
+      const nextBtn = document.getElementById("nextButton");
+      const progressElem = document.getElementById("progressText");
+
+      function boardToHTML(cards) {
+        return cards.map(c => formatCardHTML(c.rank, c.suit)).join(" ");
+      }
+
+      setTimeout(() => {
+        boardLineElem.innerHTML =
+          '<span class="label-inline">Board:</span> ' + boardToHTML(flop);
+        const eqFlop = estimateEquityMonteCarlo(heroCards, villainCards, flop, NUM_MC_TRIALS);
+        equityLineElem.innerHTML =
+          "Winning chance: " + (eqFlop.hero*100).toFixed(1) + "%";
+      }, 3000);
+
+      setTimeout(() => {
+        boardLineElem.innerHTML =
+          '<span class="label-inline">Board:</span> ' + boardToHTML(turnBoard);
+        const eqTurn = estimateEquityMonteCarlo(heroCards, villainCards, turnBoard, NUM_MC_TRIALS);
+        equityLineElem.innerHTML =
+          "Winning chance: " + (eqTurn.hero*100).toFixed(1) + "%";
+      }, 3000 + 3000);
+
+      setTimeout(() => {
+        boardLineElem.innerHTML =
+          '<span class="label-inline">Board:</span> ' + boardToHTML(fullBoard);
+        let finalEq;
+        if (tieFinal) finalEq = 0.5;
+        else finalEq = heroWinsFinal ? 1.0 : 0.0;
+        equityLineElem.innerHTML =
+          "Winning chance: " + (finalEq*100).toFixed(1) + "%";
+      }, 3000 + 3000 + 3000);
+
+      setTimeout(() => {
+        if (tieFinal) {
+          resultLineElem.innerHTML =
+            '<span class="tie-text">Pot: 40 BB — You split the pot and receive 20 BB.</span>';
+        } else if (heroWinsFinal) {
+          resultLineElem.innerHTML =
+            '<span class="win-text">Pot: 40 BB — You win 40 BB.</span>';
+        } else {
+          resultLineElem.innerHTML =
+            '<span class="lose-text">Pot: 40 BB — You lose 40 BB.</span>';
+        }
+        nextBtn.classList.remove("hidden");
+        progressElem.textContent = "Click Next hand to proceed.";
+      }, 3000 + 3000 + 3000 + 1000);
+
+      // Log outcome
+      state.data.push({
+        trial: t.trial,
+        block: t.block,
+        heroCategory: t.heroCategory,
+        heroHandCode: t.heroHandCode,
+        scripted: t.scripted,
+        scriptType: t.scriptType,
+        specialTopFold: t.specialTopFold,
+        decision: "allin",
+        villainAction: "call",
+        villainHandCode: villainCode,
+        heroWins: heroWinsFinal,
+        tie: tieFinal,
+        board: fullBoard.map(c => ({rank: c.rank, suit: c.suit})),
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    function endExperiment() {
+      document.getElementById("trialCard").classList.add("hidden");
+      document.getElementById("endCard").classList.remove("hidden");
+
+      const output = {
+        condition: CONDITION,
+        preflopRange: state.preflopRange,
+        totalTrials: state.totalTrials,
+        trials: state.data
+      };
+
+      const encoded = encodeURIComponent(JSON.stringify(output));
+
+      window.location.href =
+        "https://kusurvey.ca1.qualtrics.com/jfe/form/SV_9HMnDP6tGbFGkia?pokerdata=" + encoded;
+    }
+
+
+    // ---------------- EVENT LISTENERS ----------------
+    document.getElementById("startButton").addEventListener("click", showInstructions);
+    document.getElementById("toRangeButton").addEventListener("click", showRangeSelection);
+    document.getElementById("startGameButton").addEventListener("click", startGame);
+
+    // Build range grid on load
+    buildRangeGrid();
+  </script>
+</body>
+</html>
